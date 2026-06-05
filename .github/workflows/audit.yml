@@ -1,0 +1,21 @@
+name: audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  audit:
+    name: brew audit
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tap local checkout
+        # Homebrew disables `brew audit [path ...]`, so we install the
+        # tap from the local checkout and audit by the formula name
+        # instead. The repo is named `homebrew-tap`, so the public tap
+        # name is `oscarhugopaz/tap`.
+        run: brew tap oscarhugopaz/tap .
+      - name: Audit formula
+        run: brew audit --strict --new --online oscarhugopaz/tap/mainwp-cli

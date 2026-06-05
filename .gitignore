@@ -1,0 +1,13 @@
+# Build artifacts
+*.tar.gz
+*.zip
+*.dmg
+
+# macOS
+.DS_Store
+._*
+
+# Editor
+.idea/
+.vscode/
+*.swp
