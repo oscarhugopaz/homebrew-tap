@@ -1,8 +1,8 @@
 class MainwpCli < Formula
   desc "Command-line interface for the MainWP Dashboard REST API v2"
   homepage "https://github.com/oscarhugopaz/mainwp-cli"
-  url "https://github.com/oscarhugopaz/mainwp-cli/archive/refs/tags/v0.4.3.tar.gz"
-  sha256 "c76cc64cf8a67802214f266c9da477c7c8434796711140f8f85d14208eabf46d"
+  url "https://github.com/oscarhugopaz/mainwp-cli/archive/refs/tags/v0.4.4.tar.gz"
+  sha256 "3f834b42737aea18058ae771a9076447ee7803bfe4cc716e046d6c06b473107d"
   license "MIT"
 
   depends_on "bash" => :build
