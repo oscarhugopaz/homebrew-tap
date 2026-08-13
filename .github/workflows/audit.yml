@@ -19,3 +19,5 @@ jobs:
         run: brew tap oscarhugopaz/tap .
       - name: Audit formula
         run: brew audit --strict --new --online oscarhugopaz/tap/mainwp-cli
+      - name: Audit cask
+        run: brew audit --cask --strict --online oscarhugopaz/tap/lepton
