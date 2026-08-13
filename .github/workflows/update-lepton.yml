@@ -17,7 +17,7 @@ jobs:
     name: Update Lepton
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: main
 
@@ -104,6 +104,8 @@ jobs:
 
       - name: Validate cask
         if: steps.release.outputs.changed == 'true'
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
         run: |
           ruby -c Casks/lepton.rb
           brew style Casks/lepton.rb

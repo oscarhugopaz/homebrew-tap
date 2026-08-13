@@ -5,12 +5,17 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   audit:
     name: brew audit
     runs-on: macos-latest
+    env:
+      HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Tap local checkout
         # Homebrew disables `brew audit [path ...]`, so we install the
         # tap from the local checkout and audit by the formula name
