@@ -22,7 +22,9 @@ jobs:
         # instead. The repo is named `homebrew-tap`, so the public tap
         # name is `oscarhugopaz/tap`.
         run: brew tap oscarhugopaz/tap .
-      - name: Audit formula
-        run: brew audit --strict --new --online oscarhugopaz/tap/mainwp-cli
+      - name: Audit formulae
+        run: |
+          brew audit --strict --new --online oscarhugopaz/tap/mainwp-cli
+          brew audit --strict --new --online oscarhugopaz/tap/twenty-cli
       - name: Audit cask
         run: brew audit --cask --strict --online oscarhugopaz/tap/lepton
