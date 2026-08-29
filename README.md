@@ -5,6 +5,7 @@ Third-party Homebrew formulae and casks maintained by Oscar Hugo Paz.
 ## Available Formulae
 
 - `mainwp-cli` — Command-line interface for the MainWP Dashboard REST API v2.
+- `penpot-cli` — Lightweight CLI for coding agents using Penpot's MCP server.
 - `twenty-cli` — Terminal and automation interface for Twenty CRM.
 
 ## Available Casks
@@ -26,9 +27,10 @@ brew install oscarhugopaz/tap/<formula>
 brew install --cask oscarhugopaz/tap/<cask>
 ```
 
-For example, to install Twenty CLI or Lepton:
+For example, to install Penpot CLI, Twenty CLI, or Lepton:
 
 ```bash
+brew install oscarhugopaz/tap/penpot-cli
 brew install oscarhugopaz/tap/twenty-cli
 brew install --cask oscarhugopaz/tap/lepton
 ```

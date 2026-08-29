@@ -1,0 +1,182 @@
+name: Update Penpot CLI formula
+
+on:
+  repository_dispatch:
+    types:
+      - penpot-cli-release
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version or tag to publish (for example, 0.1.0 or v0.1.0)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-penpot-cli
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update Penpot CLI
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Resolve release version
+        id: release
+        env:
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+          MANUAL_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          requested="${DISPATCH_VERSION:-${MANUAL_VERSION}}"
+          tag="v${requested#v}"
+          if [[ ! "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid release tag: ${tag}" >&2
+            exit 1
+          fi
+
+          version="${tag#v}"
+          current=""
+          if [[ -f Formula/penpot-cli.rb ]]; then
+            current="$(ruby -ne 'if $_ =~ %r{/download/v([^/]+)/penpot-cli_}; puts $1; exit; end' Formula/penpot-cli.rb)"
+          fi
+
+          if [[ "${version}" == "${current}" ]]; then
+            echo "Penpot CLI ${version} is already current"
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          {
+            echo "changed=true"
+            echo "tag=${tag}"
+            echo "version=${version}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Download and verify release assets
+        if: steps.release.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir release-assets
+          gh release download "${TAG}" \
+            --repo oscarhugopaz/penpot-cli \
+            --dir release-assets \
+            --pattern checksums.txt \
+            --pattern "penpot-cli_${VERSION}_*.tar.gz"
+
+          cd release-assets
+          for platform in darwin_arm64 darwin_amd64 linux_arm64 linux_amd64; do
+            asset="penpot-cli_${VERSION}_${platform}.tar.gz"
+            checksum="$(awk -v asset="./${asset}" '$2 == asset { print $1 }' checksums.txt)"
+            if [[ ! "${checksum}" =~ ^[0-9a-f]{64}$ ]]; then
+              echo "Missing or invalid checksum for ${asset}" >&2
+              exit 1
+            fi
+            downloaded="$(shasum -a 256 "${asset}" | awk '{print $1}')"
+            if [[ "${downloaded}" != "${checksum}" ]]; then
+              echo "Checksum mismatch for ${asset}" >&2
+              exit 1
+            fi
+            echo "${platform}_sha=${checksum}" >> "${GITHUB_ENV}"
+          done
+
+      - name: Generate formula
+        if: steps.release.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          mkdir -p Formula
+          ruby <<'RUBY'
+          version = ENV.fetch("VERSION")
+          repository = "https://github.com/oscarhugopaz/penpot-cli"
+          platforms = {
+            "darwin_arm64" => ENV.fetch("darwin_arm64_sha"),
+            "darwin_amd64" => ENV.fetch("darwin_amd64_sha"),
+            "linux_arm64" => ENV.fetch("linux_arm64_sha"),
+            "linux_amd64" => ENV.fetch("linux_amd64_sha"),
+          }
+
+          formula = <<~FORMULA
+            class PenpotCli < Formula
+              desc "Lightweight CLI for coding agents using Penpot's MCP server"
+              homepage "#{repository}"
+              license "MIT"
+
+              livecheck do
+                url :stable
+                strategy :github_latest
+              end
+
+              on_macos do
+                on_arm do
+                  url "#{repository}/releases/download/v#{version}/penpot-cli_#{version}_darwin_arm64.tar.gz"
+                  sha256 "#{platforms.fetch("darwin_arm64")}"
+                end
+
+                on_intel do
+                  url "#{repository}/releases/download/v#{version}/penpot-cli_#{version}_darwin_amd64.tar.gz"
+                  sha256 "#{platforms.fetch("darwin_amd64")}"
+                end
+              end
+
+              on_linux do
+                on_arm do
+                  url "#{repository}/releases/download/v#{version}/penpot-cli_#{version}_linux_arm64.tar.gz"
+                  sha256 "#{platforms.fetch("linux_arm64")}"
+                end
+
+                on_intel do
+                  url "#{repository}/releases/download/v#{version}/penpot-cli_#{version}_linux_amd64.tar.gz"
+                  sha256 "#{platforms.fetch("linux_amd64")}"
+                end
+              end
+
+              def install
+                bin.install "penpot"
+              end
+
+              test do
+                assert_match version.to_s, shell_output("\#{bin}/penpot version")
+              end
+            end
+          FORMULA
+
+          File.write("Formula/penpot-cli.rb", formula)
+          RUBY
+
+      - name: Validate formula
+        if: steps.release.outputs.changed == 'true'
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          ruby -c Formula/penpot-cli.rb
+          brew style Formula/penpot-cli.rb
+          brew tap oscarhugopaz/tap .
+          cp Formula/penpot-cli.rb "$(brew --repository oscarhugopaz/tap)/Formula/penpot-cli.rb"
+          brew audit --strict --online oscarhugopaz/tap/penpot-cli
+          brew install oscarhugopaz/tap/penpot-cli
+          test "$(penpot version)" = "penpot ${VERSION}"
+          brew test oscarhugopaz/tap/penpot-cli
+
+      - name: Commit and push
+        if: steps.release.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/penpot-cli.rb
+          git diff --cached --quiet && exit 0
+          git commit -m "Update Penpot CLI to ${VERSION}"
+          git push origin HEAD:main
