@@ -1,7 +1,7 @@
 class PenpotCli < Formula
   desc "Lightweight CLI for coding agents using Penpot's MCP server"
   homepage "https://github.com/oscarhugopaz/penpot-cli"
-  version "0.2.1"
+  version "0.3.0"
   license "MIT"
 
   livecheck do
@@ -11,25 +11,25 @@ class PenpotCli < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/oscarhugopaz/penpot-cli/releases/download/v0.2.1/penpot-cli_0.2.1_darwin_arm64.tar.gz"
-      sha256 "cd6a7ec1b204d1a399221da6a42819dab4afd429bac42e2d91de5fea505a9bbc"
+      url "https://github.com/oscarhugopaz/penpot-cli/releases/download/v0.3.0/penpot-cli_0.3.0_darwin_arm64.tar.gz"
+      sha256 "edfb75aac8bc517738e26a022c178249aa9ab0f62b9636f0321830b7a03bbb7e"
     end
 
     on_intel do
-      url "https://github.com/oscarhugopaz/penpot-cli/releases/download/v0.2.1/penpot-cli_0.2.1_darwin_amd64.tar.gz"
-      sha256 "3e7a052e116e679bb0940f7efc4f2ee007261166300ecffade1d6ea23f336e32"
+      url "https://github.com/oscarhugopaz/penpot-cli/releases/download/v0.3.0/penpot-cli_0.3.0_darwin_amd64.tar.gz"
+      sha256 "107ba528913297fa0ca6f64fdd0e827fd63ba3c3b9c4d9dbc459f239997e135d"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/oscarhugopaz/penpot-cli/releases/download/v0.2.1/penpot-cli_0.2.1_linux_arm64.tar.gz"
-      sha256 "20c23eb66f2da992ab54714896e53ddb821ee9bc39d4537168ed4d33371f8821"
+      url "https://github.com/oscarhugopaz/penpot-cli/releases/download/v0.3.0/penpot-cli_0.3.0_linux_arm64.tar.gz"
+      sha256 "9bed07339b3d1cd25c8abd78de7042e0f0b05f7e1d0bb31bde367ef62a239fd1"
     end
 
     on_intel do
-      url "https://github.com/oscarhugopaz/penpot-cli/releases/download/v0.2.1/penpot-cli_0.2.1_linux_amd64.tar.gz"
-      sha256 "e2879aea60fa93064efbe1822acb0a70594b8c3d2439c16b248ebd41c4f37561"
+      url "https://github.com/oscarhugopaz/penpot-cli/releases/download/v0.3.0/penpot-cli_0.3.0_linux_amd64.tar.gz"
+      sha256 "2c5503278ba697c788bb5ea81447a87c0e907ae61abfee7934af3257c78eaced"
     end
   end
 
