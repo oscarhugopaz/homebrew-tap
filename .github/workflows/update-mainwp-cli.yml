@@ -1,0 +1,119 @@
+name: Update MainWP CLI formula
+
+on:
+  repository_dispatch:
+    types:
+      - mainwp-cli-release
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version or tag to publish (for example, 0.4.4 or v0.4.4)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-mainwp-cli
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update MainWP CLI
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Resolve release version
+        id: release
+        env:
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+          MANUAL_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          requested="${DISPATCH_VERSION:-${MANUAL_VERSION}}"
+          tag="v${requested#v}"
+          if [[ ! "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid release tag: ${tag}" >&2
+            exit 1
+          fi
+
+          version="${tag#v}"
+          current="$(ruby -ne 'if $_ =~ %r{/tags/v([^/]+)\.tar\.gz}; puts $1; exit; end' Formula/mainwp-cli.rb)"
+          if [[ -z "${current}" ]]; then
+            echo "Could not determine the current formula version" >&2
+            exit 1
+          fi
+
+          if [[ "${version}" == "${current}" ]]; then
+            echo "MainWP CLI ${version} is already current"
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          {
+            echo "changed=true"
+            echo "tag=${tag}"
+            echo "version=${version}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Download release archive
+        if: steps.release.outputs.changed == 'true'
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          url="https://github.com/oscarhugopaz/mainwp-cli/archive/refs/tags/${TAG}.tar.gz"
+          curl --fail --silent --show-error --location --retry 5 \
+            --output mainwp-cli.tar.gz "${url}"
+          checksum="$(shasum -a 256 mainwp-cli.tar.gz | awk '{print $1}')"
+          echo "url=${url}" >> "${GITHUB_ENV}"
+          echo "sha256=${checksum}" >> "${GITHUB_ENV}"
+
+      - name: Update formula
+        if: steps.release.outputs.changed == 'true'
+        run: |
+          ruby <<'RUBY'
+          path = "Formula/mainwp-cli.rb"
+          content = File.read(path)
+          url = ENV.fetch("url")
+          sha256 = ENV.fetch("sha256")
+
+          url_pattern = %r{url "https://github\.com/oscarhugopaz/mainwp-cli/archive/refs/tags/v[^"]+\.tar\.gz"}
+          abort "Could not find exactly one MainWP CLI URL" unless content.scan(url_pattern).length == 1
+          abort "Could not find exactly one MainWP CLI checksum" unless content.scan(/sha256 "[0-9a-f]{64}"/).length == 1
+
+          content.sub!(url_pattern, %(url "#{url}"))
+          content.sub!(/sha256 "[0-9a-f]{64}"/, %(sha256 "#{sha256}"))
+          File.write(path, content)
+          RUBY
+
+      - name: Validate formula
+        if: steps.release.outputs.changed == 'true'
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          ruby -c Formula/mainwp-cli.rb
+          brew style Formula/mainwp-cli.rb
+          brew tap oscarhugopaz/tap .
+          cp Formula/mainwp-cli.rb "$(brew --repository oscarhugopaz/tap)/Formula/mainwp-cli.rb"
+          brew audit --strict --online oscarhugopaz/tap/mainwp-cli
+          brew install oscarhugopaz/tap/mainwp-cli
+          test "$(mainwp --version)" = "mainwp ${VERSION}"
+          brew test oscarhugopaz/tap/mainwp-cli
+
+      - name: Commit and push
+        if: steps.release.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/mainwp-cli.rb
+          git diff --cached --quiet && exit 0
+          git commit -m "Update MainWP CLI to ${VERSION}"
+          git push origin HEAD:main
