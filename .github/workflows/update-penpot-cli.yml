@@ -110,6 +110,7 @@ jobs:
             class PenpotCli < Formula
               desc "Lightweight CLI for coding agents using Penpot's MCP server"
               homepage "#{repository}"
+              version "#{version}"
               license "MIT"
 
               livecheck do
