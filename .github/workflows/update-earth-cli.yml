@@ -111,7 +111,6 @@ jobs:
             class EarthCli < Formula
               desc "Developer-friendly CLI for programmable Earth observation"
               homepage "#{repository}"
-              version "#{version}"
               license "Apache-2.0"
 
               livecheck do
