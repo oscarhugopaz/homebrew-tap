@@ -4,6 +4,7 @@ Third-party Homebrew formulae and casks maintained by Oscar Hugo Paz.
 
 ## Available Formulae
 
+- `earth-cli` — A developer-friendly CLI for programmable Earth observation.
 - `mainwp-cli` — Command-line interface for the MainWP Dashboard REST API v2.
 - `penpot-cli` — Lightweight CLI for coding agents using Penpot's MCP server.
 - `twenty-cli` — Terminal and automation interface for Twenty CRM.
