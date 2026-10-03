@@ -10,25 +10,25 @@ class EarthCli < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/oscarhugopaz/earth-cli/releases/download/v0.5.0/earth-cli_0.5.0_darwin_arm64.tar.gz"
-      sha256 "ce5912cb18ce86ee0930a7f1c4b89ce354a3a0aaaa611d737146788f5713f0ad"
+      url "https://github.com/oscarhugopaz/earth-cli/releases/download/v0.6.0/earth-cli_0.6.0_darwin_arm64.tar.gz"
+      sha256 "619474f4249f9e96c48a788fe68593b5ea57d702246f1916f92d5ae81c84678d"
     end
 
     on_intel do
-      url "https://github.com/oscarhugopaz/earth-cli/releases/download/v0.5.0/earth-cli_0.5.0_darwin_amd64.tar.gz"
-      sha256 "f43d2707558211d466c974142f3215f8cfbeb6919dfddb6a0462ee268733c4e6"
+      url "https://github.com/oscarhugopaz/earth-cli/releases/download/v0.6.0/earth-cli_0.6.0_darwin_amd64.tar.gz"
+      sha256 "5d3b1143c0adfb0ad422fb1f381cb92018b40cfb9e650f4345e424c520bb34f7"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/oscarhugopaz/earth-cli/releases/download/v0.5.0/earth-cli_0.5.0_linux_arm64.tar.gz"
-      sha256 "f999fa2a88fe5ac0835a092c8a5c68a10e26b7352657ae51f13e778a5b6763e9"
+      url "https://github.com/oscarhugopaz/earth-cli/releases/download/v0.6.0/earth-cli_0.6.0_linux_arm64.tar.gz"
+      sha256 "2dce7e62a84322c62e2862de9623dd4f18259acfa717c8b29d0f090610cd1ee6"
     end
 
     on_intel do
-      url "https://github.com/oscarhugopaz/earth-cli/releases/download/v0.5.0/earth-cli_0.5.0_linux_amd64.tar.gz"
-      sha256 "b2a8ce1474b1c98a2732b615411ecb958709d2818e54c15a271a3459a1d99406"
+      url "https://github.com/oscarhugopaz/earth-cli/releases/download/v0.6.0/earth-cli_0.6.0_linux_amd64.tar.gz"
+      sha256 "fbf4715af98a766729aeb92ce622083b6ca58fbbe99ce61fb73178617a92217d"
     end
   end
 
